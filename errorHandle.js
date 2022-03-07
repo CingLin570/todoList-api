@@ -1,16 +1,8 @@
-const headers = {
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, Content-Length, X-Requested-With",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "PATCH, POST, GET,OPTIONS,DELETE",
-  "Content-Type": "application/json",
-};
+const headers = require("./headers");
 
-function errorHandle(res) {
+function errorHandle(res, data) {
   res.writeHead(404, headers);
-  res.write(
-    JSON.stringify({ status: "false", data: "todoList API發生錯誤" }, null, 2)
-  );
+  res.write(JSON.stringify({ status: "false", data }, null, 2));
   res.end();
 }
 
