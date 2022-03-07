@@ -1,18 +1,11 @@
 const http = require("http");
 const errorHandle = require("./errorHandle");
 const { v4: uuidv4 } = require("uuid");
-const headers = {
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, Content-Length, X-Requested-With",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "PATCH, POST, GET,OPTIONS,DELETE",
-  "Content-Type": "application/json",
-};
+const headers = require("./headers");
 const todos = [];
 const reqestListener = (req, res) => {
   let body = "";
   req.on("data", (chunk) => {
-    console.log(chunk);
     body += chunk;
   });
   if (req.url == "/todos" && req.method == "GET") {
@@ -25,7 +18,7 @@ const reqestListener = (req, res) => {
         const title = JSON.parse(body).title;
         if (title !== undefined) {
           todos.push({
-            title: title,
+            title,
             id: uuidv4(),
           });
           res.writeHead(200, headers);
@@ -34,10 +27,10 @@ const reqestListener = (req, res) => {
           );
           res.end();
         } else {
-          errorHandle(res);
+          errorHandle(res, "資料錯誤，資料名稱取得失敗");
         }
       } catch (err) {
-        errorHandle(res);
+        errorHandle(res, "資料錯誤");
       }
     });
   } else if (req.url.startsWith("/todos/") && req.method == "DELETE") {
@@ -51,7 +44,7 @@ const reqestListener = (req, res) => {
       res.write(JSON.stringify({ status: "success", data: todos }, null, 2));
       res.end();
     } else {
-      errorHandle(res);
+      errorHandle(res, `查詢ID不存在:${id}，刪除失敗`);
     }
   } else if (req.url == "/todos" && req.method == "DELETE") {
     todos.length = 0;
@@ -74,10 +67,15 @@ const reqestListener = (req, res) => {
           );
           res.end();
         } else {
-          errorHandle(res);
+          errorHandle(
+            res,
+            `編輯資料錯誤${index === -1 ? `，查詢ID不存在:${id}` : ""}${
+              title === undefined ? "，資料名稱取得失敗" : ""
+            }`
+          );
         }
       } catch (err) {
-        errorHandle(res);
+        errorHandle(res, "資料錯誤");
       }
     });
   } else if (req.url == "/todos" && req.method == "OPTIONS") {
